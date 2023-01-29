@@ -2,7 +2,9 @@ mod config;
 mod pipe;
 use log::{debug, info};
 use std::env;
+use std::process;
 use tokio::signal;
+use tokio::signal::unix::{signal, SignalKind};
 
 #[tokio::main]
 async fn main() {
@@ -15,13 +17,14 @@ async fn main() {
     start_threads(config.pairs);
     info!("Started tcp proxy");
 
-    // wait for ctrl_c
-    match signal::ctrl_c().await {
-        Ok(()) => {}
-        Err(e) => {
-            eprintln!("Unable to listen for shutdown signal: {e}");
-        }
-    }
+    let mut sigterm = signal(SignalKind::terminate()).unwrap();
+
+    tokio::select! {
+        _ = sigterm.recv() => {},
+        _ = signal::ctrl_c() => {},
+    };
+    info!("Stopping tcp proxy");
+    process::exit(0);
 }
 
 fn start_threads(mut pairs: Vec<config::Pair>) {
@@ -35,7 +38,8 @@ fn parse_args() -> String {
     args.remove(0);
     debug!("read args {args:?}");
     if args.len() != 2 {
-        panic!("usage --config CONFIG_FILE, {args:?}");
+        eprint!("usage --config CONFIG_FILE, {args:?}");
+        process::exit(-1);
     }
 
     let mut config_file: String = "".to_string();
@@ -47,7 +51,10 @@ fn parse_args() -> String {
                 debug!("config file {}", config_file);
                 idx += 2;
             }
-            _ => panic!("unknown arg {:?}", args[idx]),
+            _ => {
+                eprint!("unknown arg {:?}", args[idx]);
+                process::exit(-1);
+            }
         }
     }
 
