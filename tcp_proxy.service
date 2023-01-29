@@ -5,7 +5,8 @@ After=network-online.target
 [Service]
 Type=simple
 User=USER_NAME
-ExecStart=RUST_LOG=info /usr/bin/tcp_proxy --config /etc/tcp_proxy/config.toml
+EnvironmentFile = /etc/default/tcp_proxy
+ExecStart=/usr/bin/tcp_proxy --config /etc/tcp_proxy/config.toml
 Restart=on-abnormal
 
 [Install]
