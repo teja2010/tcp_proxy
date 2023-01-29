@@ -12,7 +12,11 @@ pub async fn open_pipe(pair: Pair) -> io::Result<()> {
     }
 }
 
-async fn pipe_data(in_stream: TcpStream, out_sock: SocketAddr, addr: SocketAddr) -> io::Result<()> {
+async fn pipe_data(
+    mut in_stream: TcpStream,
+    out_sock: SocketAddr,
+    addr: SocketAddr,
+) -> io::Result<()> {
     info!(
         "opened connection {} >> {} >> {}",
         addr,
@@ -20,29 +24,17 @@ async fn pipe_data(in_stream: TcpStream, out_sock: SocketAddr, addr: SocketAddr)
         out_sock
     );
 
-    let out_stream = TcpStream::connect(out_sock).await?;
+    let mut out_stream = TcpStream::connect(out_sock).await?;
 
-    let mut msg = vec![0; 65536];
-    loop {
-        tokio::select! {
-            _ = in_stream.readable() => {
-                if pipe_write(&in_stream, &out_stream, &mut msg).await? {
-                    break;
-                }
-            }
-            _ = out_stream.readable() => {
-                if pipe_write(&out_stream, &in_stream, &mut msg).await? {
-                    break;
-                }
-            }
-        }
-    }
+    let (into, outto) = tokio::io::copy_bidirectional(&mut in_stream, &mut out_stream).await?;
 
     info!(
-        "connection closed {} >> {} >> {}",
+        "connection closed {} >> {} >> {} ({} bytes, {} bytes)",
         addr,
         in_stream.local_addr()?,
         out_sock,
+        into,
+        outto,
     );
     Ok(())
 }
