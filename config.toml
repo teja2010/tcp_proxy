@@ -1,3 +1,4 @@
 pairs = [
-  {in_sock = "0.0.0.0:8080", out_sock = "192.168.10.101:9091" }
+  {protocol = "TCP", in_sock = "0.0.0.0:8080", out_sock = "192.168.10.101:9091" },
+  {protocol = "DNS", in_sock = "10.1.2.3:53", out_sock = "127.0.0.1:53" }
 ]

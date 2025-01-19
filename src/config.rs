@@ -1,12 +1,19 @@
 use config::Config;
 use config::File;
-use serde::Deserialize;
+use serde::{Deserialize};
 use std::net::SocketAddr;
 use std::process;
 use std::vec::Vec;
 
 #[derive(Deserialize, Debug)]
+pub enum Protocol {
+    TCP,
+    DNS,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct Pair {
+    pub protocol: Protocol,
     pub in_sock: SocketAddr,
     pub out_sock: SocketAddr,
 }

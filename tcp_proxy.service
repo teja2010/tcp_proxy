@@ -8,6 +8,8 @@ User=USER_NAME
 EnvironmentFile = /etc/default/tcp_proxy
 ExecStart=/usr/bin/tcp_proxy --config /etc/tcp_proxy/config.toml
 Restart=on-abnormal
+#AmbientCapabilities=CAP_NET_BIND_SERVICE
+# add CAP_NET_BIND_SERVICE if tcp_proxy needs to bind to previleged ports ( < 1024)
 
 [Install]
 WantedBy=multi-user.target

@@ -1,2 +1,2 @@
 # tcp_proxy
-TCP Proxy written in rust
+TCP/UDP Proxy written in rust
